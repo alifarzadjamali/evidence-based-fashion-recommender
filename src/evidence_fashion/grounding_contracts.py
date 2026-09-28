@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -100,7 +101,7 @@ def citation_occurrences(
     for index, raw in enumerate(BRACKETED_RE.findall(text), start=1):
         ids = RULE_LIKE_ID_RE.findall(raw)
         canonical_syntax = bool(CANONICAL_CITATION_RE.fullmatch(raw))
-        duplicate_ids = sorted({rule_id for rule_id in ids if ids.count(rule_id) > 1})
+        duplicate_ids = sorted(rule_id for rule_id, count in Counter(ids).items() if count > 1)
         unknown_ids = sorted(set(ids).difference(known)) if known else []
         out_of_trace_ids = sorted(set(ids).difference(trace)) if trace else []
         valid = (
