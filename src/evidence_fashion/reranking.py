@@ -65,14 +65,14 @@ def ranking_metrics(relevance: Iterable[bool]) -> dict[str, float]:
 
 def pareto_frontier(points: pd.DataFrame, objective_columns: list[str]) -> pd.DataFrame:
     values = points[objective_columns].to_numpy(dtype=np.float64)
-    dominated = np.zeros(len(points), dtype=bool)
-    for index, value in enumerate(values):
-        for other_index, other in enumerate(values):
-            if index == other_index:
-                continue
-            if np.all(other >= value) and np.any(other > value):
-                dominated[index] = True
-                break
+    dominated = np.fromiter(
+        (
+            np.any(np.all(values >= value, axis=1) & np.any(values > value, axis=1))
+            for value in values
+        ),
+        dtype=bool,
+        count=len(values),
+    )
     result = points.copy()
     result["pareto_status"] = np.where(dominated, "dominated", "frontier")
     return result
