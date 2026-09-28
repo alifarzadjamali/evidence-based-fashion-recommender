@@ -47,12 +47,13 @@ def paired_complete_rows(
     rows: Sequence[Mapping[str, Any]], generator: str | None = None
 ) -> list[dict[str, Any]]:
     """Return only case-level No-RAG/Rule-RAG pairs, optionally for one generator."""
-    selected = [row for row in rows if generator is None or row["generator_model_id"] == generator]
     by_key = {
-        (row["case_id"], row["generator_model_id"], row["condition"]): row for row in selected
+        (row["case_id"], row["generator_model_id"], row["condition"]): row
+        for row in rows
+        if generator is None or row["generator_model_id"] == generator
     }
     pairs = []
-    for case_id, model, condition in by_key:
+    for (case_id, model, condition), no_rag in by_key.items():
         if (
             condition == "no_rag"
             and (rule_rag := by_key.get((case_id, model, "rule_rag"))) is not None
@@ -61,7 +62,7 @@ def paired_complete_rows(
                 {
                     "case_id": case_id,
                     "generator_model_id": model,
-                    "no_rag": by_key[(case_id, model, condition)],
+                    "no_rag": no_rag,
                     "rule_rag": rule_rag,
                 }
             )
