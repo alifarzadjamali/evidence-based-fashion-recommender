@@ -152,7 +152,7 @@ class OllamaEmbedder:
                     "Ollama embedding response has an unexpected batch size or dimension."
                 )
             batches.append(vectors)
-        values = np.concatenate(batches).astype(np.float32)
+        values = np.concatenate(batches)
         return l2_normalize(values) if self.settings["normalize"] else values
 
 
