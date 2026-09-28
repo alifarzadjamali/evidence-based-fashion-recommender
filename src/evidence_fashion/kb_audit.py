@@ -179,10 +179,8 @@ def coverage_matrix(rules: pd.DataFrame) -> pd.DataFrame:
         for _, row in rules.iterrows()
         for query in _pipe_values(row["applicable_query_categories"])
     ]
-    matrix = pd.crosstab(
-        pd.DataFrame(records)["query_category"],
-        pd.DataFrame(records)["recommended_category"],
-    )
+    coverage = pd.DataFrame.from_records(records)
+    matrix = pd.crosstab(coverage["query_category"], coverage["recommended_category"])
     return matrix.reindex(
         index=sorted(ALLOWED_CATEGORIES), columns=sorted(ALLOWED_CATEGORIES), fill_value=0
     )
