@@ -15,9 +15,9 @@
 - [x] Corrected contrast figure generated without altering the frozen historical figure.
 - [x] Final thesis Markdown, DOCX, and 69-page A4 PDF generated.
 - [x] PDF title page, abstract, tables, figure, equations, bibliography, and page flow visually inspected.
-- [x] Repository instructions updated; deprecated planning/document files archived and labelled.
+- [x] Repository instructions updated; deprecated planning/document files removed from the active tree.
 - [x] Deterministic release audit passes.
-- [x] `ruff check .` passes.
+- [x] `python -m ruff check .` passes.
 - [x] 54 automated tests pass.
 
 ## Candidate actions required before submission

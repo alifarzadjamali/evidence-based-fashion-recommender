@@ -25,9 +25,9 @@ Grammar, punctuation, and routine formatting edits are omitted. All entries belo
 | C019 | Future work | Added the independent dataset-grounded compatibility KG only as future work, with provenance, cross-dataset separation, and CP/FITB validation requirements. | Thesis scope and user instruction |
 | C020 | Code validation | Added a deterministic compact-release audit and KB-derived-audit test; final suite is 54 passing tests. | Local test and lint runs |
 | C021 | Release portability | Documented CRLF/LF hash portability for five Windows-authored text artifacts without changing frozen manifests. | Byte-level hash comparison |
-| C022 | Repository | Moved superseded human-validation planning and the stale SNCS document to a labelled provenance archive. | Repository cleanup audit |
+| C022 | Repository | Removed superseded human-validation planning and the stale SNCS document from the active tree; Git history retains their provenance. | Repository cleanup audit |
 | C023 | Paper | Reconciled the active paper's rule-scoring, trace-cardinality, prompt-length, and terminology descriptions with the final implementation. | Final code/configuration and release |
-| C024 | Thesis package | Added front matter, abstract, abbreviations, consolidated source/reference list, regenerated chapter DOCX files, and built the final DOCX/PDF. | Edited chapter sources and build script |
-| C025 | Test count | Replaced stale “55 tests,” then updated the final count to 54 after adding the KB-derived-audit test. | `uv run pytest -q` |
+| C024 | Thesis package | Added front matter, abstract, abbreviations, consolidated source/reference list, and built the final DOCX/PDF. | Edited chapter sources and final thesis build script |
+| C025 | Test count | Replaced stale “55 tests,” then updated the final count to 54 after adding the KB-derived-audit test. | `uv run --extra dev python -m pytest -q` |
 | C026 | API diagnostics | Replaced raw Ollama HTTP/connection tracebacks with model- and endpoint-specific failure messages; no inference behaviour or frozen output changed. | Local prerequisite/integrity-check failure audit |
 | C027 | Pipeline diagnostics | Made prerequisite and stage failures exit with concise actionable messages instead of full tracebacks. | `scripts/run_final_pipeline.py --check` |

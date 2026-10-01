@@ -32,9 +32,9 @@ results.
 
 ## Active scope
 
-The active tree contains the final experiment, its frozen release artefacts, and the paper and
-thesis materials. A small `archive/` retains explicitly labelled superseded material for research
-provenance; archived files are not active results and are not part of the published pipeline.
+The active tree contains only the final experiment, its frozen release artefacts, and the paper
+and thesis materials. Superseded development notes and obsolete document versions are excluded
+from the published repository and remain available through Git history.
 
 ## Repository guide
 
@@ -86,8 +86,8 @@ For repository-only verification, run:
 
 ```bash
 uv run python scripts/audit_final_release.py
-uv run pytest -q
-uv run ruff check .
+uv run --extra dev python -m pytest -q
+uv run --extra dev python -m ruff check .
 ```
 
 The release audit accepts either the exact recorded hashes or the corresponding Git-normalised LF

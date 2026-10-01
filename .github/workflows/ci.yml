@@ -13,6 +13,5 @@ jobs:
         with:
           python-version: "3.11"
       - run: uv sync --frozen --extra dev
-      - run: uv run ruff check src tests
-      - run: uv run pytest
-
+      - run: uv run --extra dev python -m ruff check src tests
+      - run: uv run --extra dev python -m pytest

@@ -12,10 +12,10 @@ The scientific narrative, deterministic results, code checks, KB audit, consolid
 ## Repository audit status
 
 - The active entry point is `scripts/run_final_pipeline.py`; frozen configuration is in `configs/experiment.yaml`, `configs/models.yaml`, and `configs/prompts.yaml`.
-- The final experiment is the five-stage release under `artifacts/release/`. Earlier planning and a stale journal-format document are labelled under `archive/` and are not active evidence.
+- The final experiment is the five-stage release under `artifacts/release/`. Earlier planning and a stale journal-format document were removed from the active tree and remain available through Git history.
 - The immutable KB remains `data/kb/fashion_rules.csv`, SHA-256 `59cec6821d32ca78d57e0a8dee592c55c9100b6ca9ebbf17a43301a46bd30e77`.
 - The canonical verification file remains SHA-256 `0f554e58be51c0529c59814f3c5de379ec66c02afbb8fa2c5e48249a32ae9b3e`.
-- `uv run ruff check .` passes. `uv run pytest -q` passes with **54 tests**.
+- `uv run --extra dev python -m ruff check .` passes. `uv run --extra dev python -m pytest -q` passes with **54 tests**.
 - `uv run python scripts/audit_final_release.py` passes and independently checks release hashes, ranking metrics, case counts, claim counts, word counts, final contrasts, the KB distribution, and the trace-subset invariant.
 - The prerequisite-only full-pipeline check correctly identifies six unavailable local Ollama model tags on this machine. Model-dependent stages were not rerun because their frozen inputs and outputs are preserved and the experiment is closed.
 
