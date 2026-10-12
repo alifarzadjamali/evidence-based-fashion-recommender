@@ -1,20 +1,20 @@
 ---
 title: "Evidence-Constrained Multimodal Fashion Recommendation with Trace-Grounded Explanations"
-author: "[Candidate name required]"
-date: "[Submission month and year required]"
+author: "Ali Jamali"
+date: "November 2026"
 subtitle: |
   A thesis submitted in partial fulfilment of the requirements for the degree of Master of Philosophy  
   University of Salford  
-  [School/department required]  
-  Student ID: [Student ID required]  
-  Supervisors: [Supervisor names required]
-geometry: "a4paper,margin=30mm"
-fontsize: 11pt
-linestretch: 1.35
+  School of Science, Engineering and Environment  
+  Student ID: @00818653  
+  Supervisors: Dr. Taha Mansouri - Dr. Ali Alameer
+geometry: "a4paper,margin=25.4mm"
+fontsize: 12pt
+linestretch: 1.5
 colorlinks: true
 linkcolor: black
 urlcolor: blue
-toc: true
+toc: false
 toc-depth: 3
 numbersections: false
 header-includes:
@@ -38,49 +38,30 @@ include-before:
 
 # Declaration
 
-**Candidate action required before submission:** insert the exact declaration wording required by
-the applicable University of Salford/PGR template, then sign or otherwise complete it in the
-required form. No institutional declaration wording has been invented in this repository.
+I declare that this thesis is my own work, undertaken during my Master of Philosophy programme at
+the University of Salford. I have acknowledged the sources of information, text, data and images
+used in the thesis. Any material I have previously submitted or published, and any work carried
+out with others, is identified where it appears.
 
 \newpage
 
-# Acknowledgements
-
-**Candidate action required before submission:** complete or remove this section according to the
-candidate's preference and institutional requirements.
+# Contents
 
 \newpage
 
-# Abstract
+# List of figures
 
-Multimodal fashion recommenders can use images and product text to rank compatible items, but a
-fluent explanation need not reflect evidence that influenced the ranking. This thesis investigates
-an evidence-constrained pipeline that links recommendation and explanation through an explicit
-decision trace. Frozen CLIP image and text representations rank same-category candidates from
-held-out Polyvore outfits. A manually curated, source-grounded experimental knowledge base of 200
-fashion rules supplies a separate evidence score; up to five eligible rules are retained as the
-symbolic trace used in reranking. The selected item is then locked, and paired No-RAG and Rule-RAG
-explanations differ only in access to that trace and its associated grounding instructions.
-
-The recommendation experiment contains 1,000 cases across five categories. Fused CLIP was the
-strongest tested method overall on the conventional top-five, top-ten, NDCG, and reciprocal-rank
-measures. Evidence reranking changed the top-ranked item in 26.5% of cases but did not improve any
-reported aggregate recommendation metric relative to fused CLIP. The explanation experiment used
-500 evidence-eligible cases and three local generators. Under generator-specific complete pairing
-and case-clustered inference, trace access increased reranking-trace claim support by 21.02
-percentage points (95% CI 19.72--22.37) and full-KB claim support by 21.40 points (20.11--22.71).
-Trace-supported claims per 100 words increased by 1.60 (1.48--1.72). The common-reference
-Unsupported Item-Fact Rate was inconclusive because only 53 complete pairs were eligible.
-
-The principal contribution is therefore not a state-of-the-art ranking claim. It is an auditable
-evidence-to-decision-to-explanation connection: the pipeline preserves the exact symbolic evidence
-that participated in reranking, reuses that evidence during explanation, and evaluates generated
-claims against explicit source boundaries. The result demonstrates stronger trace-grounded support
-under the frozen automated evaluator while retaining the negative ranking result and the limits of
-a finite curated knowledge base and non-human explanation assessment.
+- **Figure 4.1.** Paired explanation contrasts with 95% case-clustered bootstrap intervals.
 
 \newpage
 
+# List of tables
+
+- **Table 2.1.** Representative research strands and the gap addressed by this thesis.
+- **Table 4.1.** Micro-averaged recommendation effectiveness on 1,000 frozen test cases.
+- **Table 4.2.** Overall paired explanation contrasts (Rule-RAG minus No-RAG).
+
+\newpage
 # Abbreviations
 
 | Abbreviation | Meaning |
@@ -99,17 +80,30 @@ a finite curated knowledge base and non-human explanation assessment.
 
 \newpage
 
-# List of figures
+# Abstract
 
-- **Figure 4.1.** Paired explanation contrasts with 95% case-clustered bootstrap intervals.
+This thesis examines whether fashion recommendation explanations reflect the evidence used to rank
+items. An evidence-constrained pipeline links recommendation and explanation through an explicit
+decision trace. Frozen CLIP image and text representations rank same-category candidates from
+held-out Polyvore outfits. A manually curated, source-grounded knowledge base of 200 fashion rules
+supplies a separate evidence score; up to five eligible rules are retained as the symbolic trace
+used in reranking. The selected item is then locked, and paired No-RAG and Rule-RAG explanations
+differ only in access to that trace and its grounding instructions.
 
-\newpage
+The recommendation experiment contains 1,000 cases across five categories. Fused CLIP was the
+strongest tested method overall on the conventional top-five, top-ten, NDCG, and reciprocal-rank
+measures. Evidence reranking changed the top-ranked item in 26.5% of cases but did not improve any
+reported aggregate recommendation metric relative to fused CLIP. The explanation experiment used
+500 evidence-eligible cases and three local generators. Under generator-specific complete pairing
+and case-clustered inference, trace access increased reranking-trace claim support by 21.02
+percentage points (95% CI 19.72--22.37) and full-KB claim support by 21.40 points (20.11--22.71).
+Trace-supported claims per 100 words increased by 1.60 (1.48--1.72). The common-reference
+Unsupported Item-Fact Rate was inconclusive because only 53 complete pairs were eligible.
 
-# List of tables
-
-- **Table 2.1.** Representative research strands and the gap addressed by this thesis.
-- **Table 4.1.** Micro-averaged recommendation effectiveness on 1,000 frozen test cases.
-- **Table 4.2.** Overall paired explanation contrasts (Rule-RAG minus No-RAG).
+The pipeline preserves the symbolic evidence used in reranking, reuses it during explanation, and
+evaluates generated claims against explicit source boundaries. Under the frozen automated
+evaluator, trace access improves claim support. The finding is limited by the negative ranking
+result, the finite curated knowledge base, and the absence of human explanation assessment.
 
 \newpage
 
@@ -691,13 +685,7 @@ The study uses catalogue images and descriptions from a research dataset and mak
 
 Automated assessment presents a more important validity limitation. Qwen 3.5 9B extracts claims and Phi-4 14B verifies them; this separates claim construction from entailment but does not establish either model's semantic accuracy. The restricted UIFR definition improves source-boundary transparency but cannot resolve every mixed natural-language claim. No human ratings, independent external annotations, or partial-entailment audit are included. The strongest warranted conclusion is comparative: under this frozen system evaluator, access to the exact retained trace changes measured trace support, full-KB support, trace-supported-claim density, and citation-related provenance. It does not establish human preference, factual correctness in the world, or causal faithfulness to every internal neural computation.
 
-## 3.16 Chapter summary
-
-The methodology connects recommendation and explanation through a locked decision and an exact symbolic trace. Multimodal CLIP retrieval supplies the base ranking; a filtered, source-grounded fashion rule base contributes an evidence score; validation-only selection freezes the fusion and reranking design; and the confirmatory evaluation quantifies both recommendation effectiveness and ranking change. The explanation experiment holds recommendation identity constant while varying access to B across three generators and five categories. Atomic claims, trace and full-KB support, common-reference UIFR, citation entailment, complete-pair inference, subgroup estimates, and frozen qualitative examples provide complementary views of the output.
-
-The design’s principal strength is traceability. Every reported explanation is connected to a specific A packet, B trace, generator digest, locked candidate, claim list, and verification record. Its principal limitation is equally clear: the final thesis experiment stops at automated system evaluation. Chapter 4 therefore reports quantitative differences without treating them as independently human-validated truth.
-
-## 3.17 Validity controls and decision rules
+## 3.16 Validity controls and decision rules
 
 Several controls were applied before results were interpreted. Construct validity was protected by refusing to collapse all explanation properties into a single “grounding” score. Trace support addresses agreement with the actual rule trace, full-KB support addresses broader rule grounding, UIFR addresses a narrow class of concrete product assertions, and citation entailment addresses whether an attached rule supports its claim. These measures can move differently. For example, an explanation can accurately paraphrase B while adding an unsupported material claim, or it can use a citation that does not entail the proposition it accompanies. Reporting each rate separately prevents one favourable dimension from concealing another failure.
 
@@ -710,6 +698,12 @@ External validity is bounded by the sampled catalogue, five broad categories, co
 Reliability was supported by deterministic execution and independent re-computation from stored artifacts. SHA-256 ordering replaced random iteration in split, case, tie, and example selection. Generation used greedy deterministic settings, while structured assessment calls retained model digests and raw-response hashes. Each derived table can be traced to a manifest listing input and output hashes. Re-running the publication analysis does not invoke a model; it combines immutable records, recomputes rates and cluster resamples, and recreates figures and examples.
 
 Finally, interpretation followed pre-specified language rules. A claim labelled unsupported is described as “unsupported by supplied evidence” or an “unverified item-specific assertion”, never as factually false unless affirmative contradiction exists. No-RAG agreement with hidden B is post-hoc alignment, never grounding. UIFR is explicitly described as inconclusive because its restricted eligible set is small. Evidence reranking is described as materially changing ranks and evidence alignment, not as improving recommendation accuracy, because the fused-CLIP contrasts do not establish an improvement. These linguistic constraints are part of the methodology: they keep the thesis claims proportional to the estimands actually measured.
+
+## 3.17 Chapter summary
+
+The methodology connects recommendation and explanation through a locked decision and an exact symbolic trace. Multimodal CLIP retrieval supplies the base ranking; a filtered, source-grounded fashion rule base contributes an evidence score; validation-only selection freezes the fusion and reranking design; and the confirmatory evaluation quantifies both recommendation effectiveness and ranking change. The explanation experiment holds recommendation identity constant while varying access to B across three generators and five categories. Atomic claims, trace and full-KB support, common-reference UIFR, citation entailment, complete-pair inference, subgroup estimates, and frozen qualitative examples provide complementary views of the output.
+
+The design’s principal strength is traceability. Every reported explanation is connected to a specific A packet, B trace, generator digest, locked candidate, claim list, and verification record. Its principal limitation is equally clear: the final thesis experiment stops at automated system evaluation. Chapter 4 therefore reports quantitative differences without treating them as independently human-validated truth.
 
 \newpage
 
