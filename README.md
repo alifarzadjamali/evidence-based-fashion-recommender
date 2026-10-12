@@ -32,9 +32,9 @@ results.
 
 ## Active scope
 
-The active tree contains only the final experiment, its frozen release artefacts, and the paper
-and thesis materials. Superseded development notes and obsolete document versions are excluded
-from the published repository and remain available through Git history.
+The active tree contains the final experiment, its frozen release artefacts, and the thesis.
+Local archives, draft papers, and working notes are kept in the Git-ignored `remove_later/`
+directory for review. They are not part of the reproducible pipeline.
 
 ## Repository guide
 
@@ -43,11 +43,9 @@ from the published repository and remain available through Git history.
 - `data/` contains tracked metadata and the frozen knowledge base; generated datasets are ignored.
 - `artifacts/release/` contains the immutable compact release; `artifacts/tables/` and
   `artifacts/figures/` contain presentation copies and regenerated figures.
-- `paper/` contains the manuscript sources and submission-ready document files.
 - `thesis/` contains the edited chapter sources, consolidated thesis source, bibliography, and
   rendered document files.
-- `FINAL_AUDIT_REPORT.md`, `SUBMISSION_CHECKLIST.md`, and `CORRECTION_LOG.md` record the final
-  submission audit and outstanding author/institutional actions.
+- `reports/final_clean_run_report.md` documents the final run and its frozen results.
 
 ## Reproduce the final run
 
@@ -56,8 +54,10 @@ published results. It intentionally does **not** contain the Polyvore dataset, m
 embedding arrays, runtime outputs, or Ollama model files. A fresh run therefore requires the
 following before execution.
 
-1. Python 3.11, Git, and [uv](https://docs.astral.sh/uv/). Create the environment with
-   `uv sync --frozen --extra dev`.
+1. Python 3.11, Git, Git LFS, and [uv](https://docs.astral.sh/uv/). Clone with Git LFS installed,
+   then run `git lfs pull` and `uv sync --frozen --extra dev`. The LFS-managed
+   `artifacts/release/candidate_rankings.jsonl` is about 208 MB; a 134-byte pointer is not the
+   ranking dataset. The repository-only release audit requires the full file.
 2. Network access to the public Hugging Face dataset
    [`Marqo/polyvore`](https://huggingface.co/datasets/Marqo/polyvore). The pipeline downloads the
    pinned revision `8c782ee447faf2d2a0402ac883cf07d3b3f43e1c` recorded in
@@ -87,12 +87,13 @@ For repository-only verification, run:
 ```bash
 uv run python scripts/audit_final_release.py
 uv run --extra dev python -m pytest -q
-uv run --extra dev python -m ruff check .
+uv run --extra dev python -m ruff check src scripts tests
 ```
 
 The release audit accepts either the exact recorded hashes or the corresponding Git-normalised LF
 form for five Windows-authored text artifacts; it reports which form was found. It then recomputes
 the recommendation metrics and checks the final explanation counts and trace-subset invariant.
+GitHub Actions fetches the LFS object and runs the same audit.
 
 Then run all stages in order. This writes a new isolated reproduction package and never overwrites
 the committed final results:
@@ -109,3 +110,11 @@ The Docker image runs the same prerequisite check by default. For a containerize
 Hugging Face cache and make Ollama reachable from the container (for example, set the endpoint in
 a copied models configuration to `http://host.docker.internal:11434`); direct host execution is
 the supported default.
+
+## Rebuild the thesis documents
+
+The chapter Markdown and `thesis/front_matter.md` are the editable sources. On Windows with
+Microsoft Word installed, run `uv sync --frozen --extra thesis` followed by
+`uv run --extra thesis python scripts/build_final_thesis.py` to rebuild the consolidated Markdown,
+DOCX, and PDF. The build uses Word automation for final DOCX pagination and the corrected figure
+in `artifacts/figures/`.
