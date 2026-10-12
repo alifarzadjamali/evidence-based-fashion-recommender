@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import os
 import re
+import shutil
 import subprocess
+import sys
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -29,10 +32,7 @@ def parse_chapter(path: Path) -> tuple[str, dict[int, str]]:
     heading = re.match(r"# Chapter (\d+)\s+\n\s*# ([^\n]+)\s*\n", body)
     if not heading:
         raise ValueError(f"Unexpected chapter heading structure: {path}")
-    body = (
-        f"# Chapter {heading.group(1)}: {heading.group(2)}\n"
-        + body[heading.end() :].lstrip()
-    )
+    body = f"# Chapter {heading.group(1)}: {heading.group(2)}\n" + body[heading.end() :].lstrip()
     return body, references
 
 
@@ -58,9 +58,7 @@ def consolidate(chapter_paths: Iterable[Path]) -> tuple[list[str], list[str]]:
     for path in chapter_paths:
         body, local_references = parse_chapter(path)
 
-        def replace(
-            match: re.Match[str], references: dict[int, str] = local_references
-        ) -> str:
+        def replace(match: re.Match[str], references: dict[int, str] = local_references) -> str:
             local_numbers = expand_numbers(match.group(1))
             if not local_numbers or any(number not in references for number in local_numbers):
                 return match.group(0)
@@ -111,23 +109,31 @@ def main() -> None:
         newline="\n",
     )
 
+    pandoc = shutil.which("pandoc")
+    if pandoc is None:
+        import pypandoc
+
+        pandoc = pypandoc.get_pandoc_path()
     common = [
-        "pandoc",
+        pandoc,
         str(source_path),
         "--from=markdown+raw_tex+tex_math_single_backslash",
-        f"--resource-path={THESIS}:{ROOT}",
-        "--toc",
-        "--number-sections",
+        f"--resource-path={THESIS}{os.pathsep}{ROOT}",
+        "--standalone",
     ]
     run(common + ["--output", str(THESIS / "final_thesis.docx")])
+    run([sys.executable, str(ROOT / "scripts" / "format_salford_thesis.py")])
     run(
-        common
-        + [
-            "--pdf-engine=xelatex",
-            "--output",
-            str(THESIS / "final_thesis.pdf"),
+        [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(ROOT / "scripts" / "export_salford_thesis.ps1"),
         ]
     )
+    run([sys.executable, str(ROOT / "scripts" / "render_salford_pdf.py")])
     print(f"Built {source_path}, final_thesis.docx, and final_thesis.pdf")
     print(f"Consolidated {len(references)} cited references")
 

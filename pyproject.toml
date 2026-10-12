@@ -28,6 +28,12 @@ dev = [
 cuda = [
     "torch>=2.7,<2.8",
 ]
+thesis = [
+    "pypandoc-binary>=1.17",
+    "python-docx>=1.2.0",
+    "pypdf>=6.20.0",
+    "typst>=0.15.0",
+]
 
 [tool.uv.sources]
 torch = [{ index = "pytorch-cu128", extra = "cuda" }]
