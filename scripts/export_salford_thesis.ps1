@@ -10,7 +10,7 @@ try {
     $document = $word.Documents.Open($docxPath, $false, $false)
     Write-Output 'Opened Word document.'
     if ($document.Sections.Count -eq 1) {
-        foreach ($heading in @('Chapter 1: Introduction', 'Declaration')) {
+        foreach ($heading in @('Chapter 1: Introduction', 'Contents')) {
             $paragraph = $null
             foreach ($candidate in $document.Paragraphs) {
                 if ($candidate.Range.Text.Trim() -eq $heading) {

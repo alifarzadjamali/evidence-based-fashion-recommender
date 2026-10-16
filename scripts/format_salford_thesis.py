@@ -1,5 +1,6 @@
 """Apply the public Salford formatting guide to the generated Word thesis."""
 
+import re
 from pathlib import Path
 
 from docx import Document
@@ -44,15 +45,17 @@ def main() -> None:
     for section in doc.sections:
         section.page_width = Cm(21)
         section.page_height = Cm(29.7)
-        section.top_margin = Cm(2.54)
-        section.bottom_margin = Cm(2.54)
-        section.left_margin = Cm(2.54)
-        section.right_margin = Cm(2.54)
+        section.top_margin = Cm(3)
+        section.bottom_margin = Cm(3)
+        section.left_margin = Cm(3)
+        section.right_margin = Cm(3)
 
     for style in doc.styles:
         if style.type != WD_STYLE_TYPE.PARAGRAPH:
             continue
-        style.font.name = "Times New Roman"
+        style.font.name = "Arial"
+        style.font.size = Pt(12)
+        style.paragraph_format.line_spacing = 1.5
         if style.name in {"Normal", "Body Text", "First Paragraph", "Compact", "Block Text"}:
             style.font.size = Pt(12)
             style.paragraph_format.line_spacing = 1.5
@@ -64,10 +67,11 @@ def main() -> None:
     for name in ("Figure Caption", "Table Caption", "Contents Title"):
         if name not in doc.styles:
             doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
-        doc.styles[name].font.name = "Times New Roman"
+        doc.styles[name].font.name = "Arial"
         doc.styles[name].font.size = Pt(12)
-    doc.styles["Figure Caption"].paragraph_format.line_spacing = 1.0
-    doc.styles["Table Caption"].paragraph_format.line_spacing = 1.0
+    doc.styles["Figure Caption"].paragraph_format.line_spacing = 1.5
+    doc.styles["Table Caption"].paragraph_format.line_spacing = 1.5
+    doc.styles["Table Caption"].paragraph_format.keep_with_next = True
     doc.styles["Contents Title"].font.bold = True
     doc.styles["Contents Title"].font.size = Pt(14)
 
@@ -82,20 +86,17 @@ def main() -> None:
     }
     for paragraph in doc.paragraphs:
         value = paragraph.text.strip()
-        if value in top_level or value.startswith("Chapter "):
+        if value in top_level or value.startswith(("Chapter ", "Appendix ")):
             paragraph.paragraph_format.keep_with_next = True
             paragraph.paragraph_format.page_break_before = value not in {
-                "Declaration",
+                "Contents",
                 "Chapter 1: Introduction",
             }
         if value == "Contents":
             paragraph.style = doc.styles["Contents Title"]
-        elif value.startswith("Figure 4.1.") and paragraph.style.name != "Compact":
+        elif re.match(r"Figure \d+\.\d+\.", value) and paragraph.style.name != "Compact":
             paragraph.style = doc.styles["Figure Caption"]
-        elif (
-            value.startswith(("Table 2.1.", "Table 4.1.", "Table 4.2."))
-            and paragraph.style.name != "Compact"
-        ):
+        elif re.match(r"Table [A-Z0-9]+\.\d+\.", value) and paragraph.style.name != "Compact":
             paragraph.style = doc.styles["Table Caption"]
 
     fields = {
@@ -118,6 +119,15 @@ def main() -> None:
     for table in doc.tables:
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         table.autofit = True
+        if len(table.columns) == 5 and table.cell(0, 1).text == "Paired cases":
+            table.cell(0, 1).text = "Cases"
+            table.autofit = False
+            widths = [0.32, 0.12, 0.17, 0.24, 0.15]
+            for column, fraction in zip(table.columns, widths, strict=True):
+                column.width = Cm(15 * fraction)
+            for row in table.rows:
+                for cell, fraction in zip(row.cells, widths, strict=True):
+                    cell.width = Cm(15 * fraction)
         for row_number, row in enumerate(table.rows):
             row_props = row._tr.get_or_add_trPr()
             if row_number == 0:
@@ -128,10 +138,12 @@ def main() -> None:
             row_props.append(cant_split)
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
-                    paragraph.paragraph_format.line_spacing = 1.0
+                    paragraph.paragraph_format.line_spacing = 1.5
+                    paragraph.paragraph_format.space_after = Pt(3)
+                    paragraph.paragraph_format.keep_with_next = row_number == 0
                     for run in paragraph.runs:
-                        run.font.name = "Times New Roman"
-                        run.font.size = Pt(9 if len(table.columns) >= 5 else 10)
+                        run.font.name = "Arial"
+                        run.font.size = Pt(12)
 
     doc.save(PATH)
     print(f"Formatted {PATH}")

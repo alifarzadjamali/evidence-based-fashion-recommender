@@ -116,5 +116,8 @@ the supported default.
 The chapter Markdown and `thesis/front_matter.md` are the editable sources. On Windows with
 Microsoft Word installed, run `uv sync --frozen --extra thesis` followed by
 `uv run --extra thesis python scripts/build_final_thesis.py` to rebuild the consolidated Markdown,
-DOCX, and PDF. The build uses Word automation for final DOCX pagination and the corrected figure
-in `artifacts/figures/`.
+DOCX, and PDF. The build uses Word automation for DOCX pagination and Typst for the PDF, so their
+page counts can differ. Both use Arial, 12-point body text, 1.5 line spacing and 30 mm margins.
+The build also regenerates `thesis/appendices.md` from the frozen release and the pipeline diagram
+in `thesis/figures/`, without model calls. Edit the chapter sources rather than the consolidated
+document; inconsistent reference metadata and unresolved citations stop the build.

@@ -58,10 +58,14 @@ def consolidate(chapter_paths: Iterable[Path]) -> tuple[list[str], list[str]]:
     for path in chapter_paths:
         body, local_references = parse_chapter(path)
 
-        def replace(match: re.Match[str], references: dict[int, str] = local_references) -> str:
+        def replace(
+            match: re.Match[str],
+            references: dict[int, str] = local_references,
+            chapter_name: str = path.name,
+        ) -> str:
             local_numbers = expand_numbers(match.group(1))
             if not local_numbers or any(number not in references for number in local_numbers):
-                return match.group(0)
+                raise ValueError(f"Unresolved citation in {chapter_name}: {match.group(0)}")
             mapped: list[int] = []
             for number in local_numbers:
                 reference = references[number]
@@ -69,12 +73,19 @@ def consolidate(chapter_paths: Iterable[Path]) -> tuple[list[str], list[str]]:
                 if key not in global_numbers:
                     global_numbers[key] = len(global_numbers) + 1
                     global_references[key] = reference
-                elif len(reference) > len(global_references[key]):
-                    global_references[key] = reference
+                elif reference != global_references[key]:
+                    raise ValueError(f"Conflicting reference metadata in {chapter_name}: {key}")
                 mapped.append(global_numbers[key])
-            return "[" + ",".join(str(number) for number in mapped) + "]"
+            return "(" + ", ".join(str(number) for number in mapped) + ")"
 
-        chapter_bodies.append(citation_pattern.sub(replace, body).rstrip())
+        # Numeric intervals inside equations and identifiers in code are not citations.
+        pieces = re.split(r"(`[^`]+`|\\\[.*?\\\]|\\\(.*?\\\))", body, flags=re.S)
+        chapter_bodies.append(
+            "".join(
+                piece if index % 2 else citation_pattern.sub(replace, piece)
+                for index, piece in enumerate(pieces)
+            ).rstrip()
+        )
 
     ordered = [""] * len(global_numbers)
     for key, number in global_numbers.items():
@@ -87,11 +98,12 @@ def run(command: list[str]) -> None:
 
 
 def main() -> None:
+    run([sys.executable, str(ROOT / "scripts" / "build_thesis_support.py")])
     chapters = [THESIS / f"thesis_chapter_{number}.md" for number in range(1, 6)]
     bodies, references = consolidate(chapters)
     front = (THESIS / "front_matter.md").read_text(encoding="utf-8").rstrip()
     reference_text = "\n\n".join(
-        f"[{number}] {reference}" for number, reference in enumerate(references, start=1)
+        f"({number}) {reference}" for number, reference in enumerate(references, start=1)
     )
     complete = (
         front
@@ -99,7 +111,8 @@ def main() -> None:
         + "\n\n\\newpage\n\n".join(bodies)
         + "\n\n\\newpage\n\n# References\n\n"
         + reference_text
-        + "\n"
+        + "\n\n\\newpage\n\n"
+        + (THESIS / "appendices.md").read_text(encoding="utf-8")
     )
     source_path = THESIS / "final_thesis.md"
     source_path.write_text(complete, encoding="utf-8", newline="\n")
@@ -114,9 +127,16 @@ def main() -> None:
         import pypandoc
 
         pandoc = pypandoc.get_pandoc_path()
+    # Pandoc's Word math writer ignores LaTeX tags. Retain visible equation numbers.
+    render_source = ROOT / ".runtime" / "thesis_render.md"
+    render_source.parent.mkdir(exist_ok=True)
+    render_source.write_text(
+        re.sub(r"\\tag\{([^}]+)\}", lambda m: r"\qquad\text{(" + m[1] + ")}", complete),
+        encoding="utf-8",
+    )
     common = [
         pandoc,
-        str(source_path),
+        str(render_source),
         "--from=markdown+raw_tex+tex_math_single_backslash",
         f"--resource-path={THESIS}{os.pathsep}{ROOT}",
         "--standalone",
