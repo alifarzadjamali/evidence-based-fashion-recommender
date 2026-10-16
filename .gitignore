@@ -21,8 +21,19 @@ data/processed/
 .ipynb_checkpoints/
 .idea/
 .vscode/
-thesis/.cache/
-thesis/final_thesis.typ
+thesis/
+artifacts/
+reports/
+
+# Keep the execution guide; working documents stay local.
+*.md
+!/README.md
+
+# Derived knowledge-base summaries are regenerated from fashion_rules.csv.
+data/kb/coverage_matrix.csv
+data/kb/kb_rule_similarity_audit.csv
+data/kb/kb_source_registry.csv
+data/kb/kb_source_url_audit_*.csv
 
 # Local material retained for manual review; never publish this folder.
 remove_later/

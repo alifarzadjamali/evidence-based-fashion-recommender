@@ -1,4 +1,4 @@
-"""Run the authorised synthetic Qwen/Phi Stage-1 integrity check only."""
+"""Check Qwen extraction and Phi verification against a synthetic evidence packet."""
 
 from __future__ import annotations
 

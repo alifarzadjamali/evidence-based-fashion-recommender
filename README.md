@@ -1,123 +1,97 @@
-# Evidence-Constrained Multimodal Fashion Recommendation
+# Evidence-constrained fashion recommendation
 
-This repository contains the frozen experiment and thesis materials for a study of
-evidence-constrained multimodal fashion recommendation. It evaluates controlled sampled-pool
-recommendation across `tops`, `bottoms`, `shoes`, `outerwear`, and `bags`, then tests whether
-explanations conditioned on the exact source-grounded fashion-rule trace used for reranking are
-more evidentially grounded.
+This pipeline recommends fashion items from image and product-text embeddings, reranks them with source-linked fashion rules, and generates explanations from the retained rule evidence. It then extracts atomic claims, verifies their support and computes paired explanation and recommendation metrics.
 
-The sole active knowledge base is `data/kb/fashion_rules.csv`: 200 manually curated,
-source-grounded experimental rules, 40 for each target category. It is not a universal fashion
-ontology or independently certified professional guidance. The confirmatory operating point is
-fixed at 0.40 image / 0.60 CLIP text and 0.75 CLIP / 0.25 rule evidence with up to five applicable
-rules. Validation grids are descriptive sensitivity analyses only.
+The target categories are tops, bottoms, shoes, outerwear and bags. The canonical input, `data/kb/fashion_rules.csv`, contains 200 rules with source references and applicability fields. These are experimental styling rules with finite coverage. CLIP fusion uses 0.40 image and 0.60 text weights; reranking uses 0.75 CLIP and 0.25 rule evidence, retaining up to five applicable rules. The settings and validation grids are in `configs/experiment.yaml`.
 
-The frozen results are deliberately mixed. Fused CLIP was the strongest tested conventional
-ranking pathway overall; evidence reranking did not improve aggregate recommendation metrics.
-The reranker did create an inspectable decision trace, and supplying that exact trace to the
-explanation generator increased trace-supported claim rate by 21.02 percentage points and
-full-KB-supported claim rate by 21.40 points in the final paired experiment.
+## Repository contents
 
-The run is governed by five approval-gated stages:
+| Path | Purpose |
+|---|---|
+| `src/evidence_fashion/` | Data preparation, retrieval, reranking, explanation contracts and evaluation |
+| `scripts/` | Stage runners, model caching and knowledge-base checks |
+| `configs/experiment.yaml` | Dataset revision, splits, candidate pools, ranking settings and output paths |
+| `configs/models.yaml` | Model revisions, recorded digests and inference settings |
+| `configs/prompts.yaml` | Generation, extraction and verification prompts |
+| `data/kb/fashion_rules.csv` | Canonical rule input and source provenance |
+| `tests/` | Functional tests for preprocessing, evidence handling and statistical analysis |
+| `uv.lock` | Locked Python dependencies |
 
-1. preflight, clean reset, and final freeze;
-2. final recommendations and 3,000 fresh explanations;
-3. fresh atomic-claim extraction;
-4. fresh claim verification;
-5. final analysis and release closure.
+Generated data, model caches, run outputs and documents stay outside version control. A new run creates its own manifests, tables, figures and release package.
 
-Canonical runtime outputs are under `.runtime/current/`; compact reproducibility materials are
-published only after release in `artifacts/release/`. Earlier development outputs are not active
-results.
+## Setup
 
-## Active scope
+Use Python 3.11 and uv. Run commands from the repository root.
 
-The active tree contains the final experiment, its frozen release artefacts, and the thesis.
-Local archives, draft papers, and working notes are kept in the Git-ignored `remove_later/`
-directory for review. They are not part of the reproducible pipeline.
+```bash
+uv sync --frozen --extra dev
+uv run python scripts/cache_huggingface_models.py
+```
 
-## Repository guide
+The cache command downloads the pinned MiniLM and CLIP revisions in `configs/models.yaml`. Later stages load those models from the local cache. Data preparation downloads `Marqo/polyvore` at revision `8c782ee447faf2d2a0402ac883cf07d3b3f43e1c`, as configured in `configs/experiment.yaml`.
 
-- `src/` contains the package implementation.
-- `scripts/` contains the staged analysis and release utilities.
-- `data/` contains tracked metadata and the frozen knowledge base; generated datasets are ignored.
-- `artifacts/release/` contains the immutable compact release; `artifacts/tables/` and
-  `artifacts/figures/` contain presentation copies and regenerated figures.
-- `thesis/` contains the edited chapter sources, consolidated thesis source, bibliography, and
-  rendered document files.
-- `reports/final_clean_run_report.md` documents the final run and its frozen results.
+Start Ollama at the configured endpoint, `http://127.0.0.1:11434`, and install these model tags:
 
-## Reproduce the final run
+```bash
+ollama pull qwen3-embedding:0.6b
+ollama pull gemma4:12b
+ollama pull llama3.1:8b-instruct-q8_0
+ollama pull ministral-3:14b-instruct-2512-q4_K_M
+ollama pull qwen3.5:9b
+ollama pull phi4:14b
+```
 
-The repository contains code, configuration, the frozen 200-rule knowledge base, and the compact
-published results. It intentionally does **not** contain the Polyvore dataset, model caches,
-embedding arrays, runtime outputs, or Ollama model files. A fresh run therefore requires the
-following before execution.
+Check local model metadata against the revisions and recorded digests in `configs/models.yaml`; tags can change. Dataset preparation, embeddings and local inference require substantial disk and memory. GPU execution is recommended. For the configured CUDA dependency, add `--extra cuda` to the sync command.
 
-1. Python 3.11, Git, Git LFS, and [uv](https://docs.astral.sh/uv/). Clone with Git LFS installed,
-   then run `git lfs pull` and `uv sync --frozen --extra dev`. The LFS-managed
-   `artifacts/release/candidate_rankings.jsonl` is about 208 MB; a 134-byte pointer is not the
-   ranking dataset. The repository-only release audit requires the full file.
-2. Network access to the public Hugging Face dataset
-   [`Marqo/polyvore`](https://huggingface.co/datasets/Marqo/polyvore). The pipeline downloads the
-   pinned revision `8c782ee447faf2d2a0402ac883cf07d3b3f43e1c` recorded in
-   [`configs/experiment.yaml`](configs/experiment.yaml).
-3. Local cached copies of the exact Hugging Face model revisions. Run
-   `uv run python scripts/cache_huggingface_models.py`; this downloads the MiniLM and CLIP
-   revisions recorded in [`configs/models.yaml`](configs/models.yaml). The pipeline deliberately
-   uses local-only model loading after this step.
-4. A running Ollama server compatible with the configured `http://127.0.0.1:11434` endpoint and
-   these exact model tags: `qwen3-embedding:0.6b`, `gemma4:12b`,
-   `llama3.1:8b-instruct-q8_0`, `ministral-3:14b-instruct-2512-q4_K_M`, `qwen3.5:9b`, and
-   `phi4:14b`. Their expected revisions and recorded immutable digests are in
-   [`configs/models.yaml`](configs/models.yaml). Use the configured tags and inspect the local
-   Ollama model metadata before running; model tags can otherwise be mutable.
-5. Adequate local disk, memory, and preferably GPU resources for the dataset embeddings and the
-   listed local models. The pipeline is designed for sequential local-model execution, not a
-   lightweight laptop run.
+## Run the pipeline
 
-First validate the local setup without downloading data or generating outputs:
+Check that Ollama and the cached embedding models are available:
 
 ```bash
 uv run python scripts/run_final_pipeline.py --check
 ```
 
-For repository-only verification, run:
+This loads the embedding models and queries Ollama model availability. It does not generate explanations or download the dataset.
 
-```bash
-uv run python scripts/audit_final_release.py
-uv run --extra dev python -m pytest -q
-uv run --extra dev python -m ruff check src scripts tests
-```
-
-The release audit accepts either the exact recorded hashes or the corresponding Git-normalised LF
-form for five Windows-authored text artifacts; it reports which form was found. It then recomputes
-the recommendation metrics and checks the final explanation counts and trace-subset invariant.
-GitHub Actions fetches the LFS object and runs the same audit.
-
-Then run all stages in order. This writes a new isolated reproduction package and never overwrites
-the committed final results:
+Start a complete run:
 
 ```bash
 uv run python scripts/run_final_pipeline.py --run
 ```
 
-By default, outputs are placed below `.runtime/reproductions/<timestamp>/`. To choose a location,
-pass `--run-root D:\path\to\new-run`. The generated release directory contains its own manifests,
-tables, figures, and hashes for comparison with the committed release package.
+The runner executes these steps in order:
 
-The Docker image runs the same prerequisite check by default. For a containerized run, mount the
-Hugging Face cache and make Ollama reachable from the container (for example, set the endpoint in
-a copied models configuration to `http://host.docker.internal:11434`); direct host execution is
-the supported default.
+1. Prepare the dataset, enforce split and exact-image leakage controls, and construct cases.
+2. Build text, image and rule embeddings; evaluate validation sensitivity and run extraction/verification integrity checks.
+3. Freeze the preflight manifest, rank candidates, rerank with rule evidence and lock the selected items and traces.
+4. Generate paired No-RAG and Rule-RAG explanations for the same selected items.
+5. Extract atomic claims and verify them against the retained trace, full rule packet and eligible item facts.
+6. Compute recommendation metrics and paired explanation contrasts, then write the release package and hashes.
 
-## Rebuild the thesis documents
+Outputs default to `.runtime/reproductions/<timestamp>/`. Set `--run-root /path/to/new-run` to choose another location. The directory must not already exist. Each run contains its resolved experiment configuration, runtime records and an `artifacts/` directory with manifests, tables, figures and release files. Model responses can vary with hardware and server versions; compare recorded revisions, digests and inference settings when reproducing results.
 
-The chapter Markdown and `thesis/front_matter.md` are the editable sources. On Windows with
-Microsoft Word installed, run `uv sync --frozen --extra thesis` followed by
-`uv run --extra thesis python scripts/build_final_thesis.py` to rebuild the consolidated Markdown,
-DOCX, and PDF. The build uses Word automation for DOCX pagination and Typst for the PDF, so their
-page counts can differ. Both use Arial, 12-point body text, 1.5 line spacing and 30 mm margins.
-The build also regenerates `thesis/appendices.md` from the frozen release and the pipeline diagram
-in `thesis/figures/`, without model calls. Edit the chapter sources rather than the consolidated
-document; inconsistent reference metadata and unresolved citations stop the build.
+Use `--config`, `--models-config` and `--prompts-config` to supply alternative configuration files. Individual stage scripts also expose command-line arguments through `--help`. They consume the manifests and outputs of preceding stages.
+
+## Check the implementation
+
+```bash
+uv run --extra dev python -m pytest -q
+uv run --extra dev python -m ruff check src scripts tests
+```
+
+These checks run without downloading the dataset or calling generation models. CI runs the same tests and lint checks. To regenerate rule coverage, source counts and duplicate-similarity tables locally:
+
+```bash
+uv run python scripts/rebuild_kb_audits.py --output-dir .runtime/kb-checks
+```
+
+The pipeline preserves rule IDs, evidence traces, configuration hashes and model metadata. Images contribute to recommendation embeddings; explanation evidence is drawn from the allowed product text and rule packets. Verification labels are automated source-support judgements and need separate validation for human-facing claims.
+
+## Container execution
+
+```bash
+docker build -t evidence-fashion .
+docker run --rm evidence-fashion --help
+```
+
+The image defaults to the prerequisite check. For inference, mount the Hugging Face cache and a writable run directory, and configure an Ollama endpoint reachable from the container. The default loopback endpoint refers to the container itself. Direct host execution uses the setup above.

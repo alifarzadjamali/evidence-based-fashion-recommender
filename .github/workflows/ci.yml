@@ -9,12 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.11"
       - run: uv sync --frozen --extra dev
       - run: uv run --extra dev python -m ruff check src scripts tests
       - run: uv run --extra dev python -m pytest
-      - run: uv run python scripts/audit_final_release.py
