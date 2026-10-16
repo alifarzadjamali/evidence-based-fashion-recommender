@@ -19,7 +19,7 @@ The thesis is not ready to submit yet, though most of the fixes are mechanical. 
 - one reference that looks invented ([22])
 - layout that does not meet Salford's research-thesis rules
 - leftover sentences from earlier drafts
-- writing that reads as heavily AI-generated
+- repetitive or formulaic prose
 
 ---
 
@@ -178,24 +178,11 @@ This review could not run Turnitin, and a Turnitin Originality Report is require
 
 ---
 
-## 8. Does it read as AI-written?
+## 8. Prose review
 
-**It reads as heavily AI-generated or AI-rewritten.** This cannot be proven, and no detector is reliable. Detector models could not be run for this review because the site that hosts them was blocked, so this judgement comes from measuring writing patterns and reading closely.
+The historical draft contained repeated negation and contrast, similar sentence lengths across chapters, and formulaic paragraph endings. These observations support editing for clarity and variety; they do not establish who or what wrote the text. Earlier claims predicting an AI-detector result have been withdrawn because no such test was performed and the writing patterns do not substantiate that prediction.
 
-### What points that way
-
-- **Constant negation and contrast.** There are 12.3 "not/cannot" per 1,000 words, roughly 2–3 times what is normal in academic writing. 23% of sentences contain a negation, and "rather than" appears 50 times. Lines like "post-hoc alignment, not grounding" run all the way through.
-- **Very even sentence length.** The average is 18–21 words in every chapter.
-- **Neat one-line paragraph endings**, such as "Preserving this mixed result is part of the empirical contribution" and "This conclusion is deliberately useful rather than maximal".
-- **The draft leftovers in section 1, the invented title for [22] and the misreading of [9].** These are typical of text produced by repeatedly asking an AI to revise, and of sources that were not read in full.
-- **Absent:** the classic ChatGPT words ("delve", "pivotal") and em dashes. Simple word-list checks would not flag it, but statistical detectors like Turnitin's probably would.
-
-### Salford's position on generative AI
-
-- Detection tools "are not institutionally approved and must not be used to investigate suspected cases of academic misconduct" (generative AI policy, paragraph 40).
-- Misconduct is using AI "to intentionally mislead others or misrepresent the abilities or understanding of an individual" (paragraph 37).
-- Use of AI in research is covered by a separate research statement. Ask the supervisors or the Doctoral School whether an AI acknowledgement is needed. If AI helped with the drafting, add one, and rewrite Chapters 2 and 5 in the author's own voice. The viva is where this will actually be tested.
-- Salford's guidance also says never to put "unpublished research, your own or anyone else's work" into AI tools the university has not approved. Microsoft 365 Copilot is the approved one.
+The current submission audit records the later prose revisions. Confirm applicable assistance-disclosure requirements with the supervisors or Doctoral School using current guidance.
 
 ---
 
@@ -207,7 +194,7 @@ The citation-entailment counts on p.32 (1,820 entails against 5,502 does not ent
 
 ## How this review was done, and its limits
 
-- This review was prepared with an AI assistant (Claude).
+- This review was prepared with AI assistance.
 - All 57 pages were read. Font sizes, margins and line spacing were measured from the PDF.
 - Each reference was checked against publisher pages, the ACL Anthology, CVF Open Access, arXiv, NeurIPS and PMLR proceedings, and Nature.
 - Salford's rules were taken from official university documents (listed below).
